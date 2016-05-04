@@ -20,14 +20,16 @@ use_inline_resources if defined?(use_inline_resources)
 
 action :create do
   template "/etc/openvpn/#{new_resource.name}.conf" do
-    cookbook 'openvpn'
+    cookbook new_resource.cookbook
     source "#{new_resource.name}.conf.erb"
     owner 'root'
     group 'root'
     mode 0644
     variables(
       config: new_resource.config || node['openvpn']['config'],
-      push_routes: node['openvpn']['push_routes']
+      push_routes: node['openvpn']['push_routes'],
+      push_options: node['openvpn']['push_options'],
+      client_cn: node['openvpn']['client_cn']
     )
     helpers do
       # rubocop:disable Metrics/MethodLength
@@ -40,7 +42,7 @@ action :create do
           when String
             m << "push \"#{option} #{conf}\""
           else
-            fail "Push option data type #{conf.class} not supported"
+            raise "Push option data type #{conf.class} not supported"
           end
         end
       end

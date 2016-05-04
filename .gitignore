@@ -9,7 +9,6 @@
 *.bkup
 .kitchen.local.yml
 Berksfile.lock
-Gemfile.lock
 
 .bundle/
 .cache/
@@ -20,3 +19,10 @@ bin/
 tmp/
 vendor/
 /metadata.json
+/vagrant/chef_zero/data_bags/users/*.json
+/vagrant/chef_zero/nodes/*.json
+/vagrant/chef_zero/roles/*.json
+
+# ChefSpec coverage reports
+*.*.json
+*.*.json.lock

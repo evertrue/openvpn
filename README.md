@@ -2,9 +2,12 @@ openvpn Cookbook
 ================
 [![Build Status](https://secure.travis-ci.org/xhost-cookbooks/openvpn.png?branch=master)](http://travis-ci.org/xhost-cookbooks/openvpn)
 [![Cookbook Version](https://img.shields.io/cookbook/v/openvpn.svg)](https://supermarket.chef.io/cookbooks/openvpn)
+[![Dependency Status](https://gemnasium.com/xhost-cookbooks/openvpn.svg)](https://gemnasium.com/xhost-cookbooks/openvpn)
+[![Code Climate](https://codeclimate.com/github/xhost-cookbooks/openvpn/badges/gpa.svg)](https://codeclimate.com/github/xhost-cookbooks/openvpn)
+[![Test Coverage](https://codeclimate.com/github/xhost-cookbooks/openvpn/badges/coverage.svg)](https://codeclimate.com/github/xhost-cookbooks/openvpn)
 [![License](https://img.shields.io/badge/license-Apache_2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-Installs OpenVPN and sets up a fairly basic configuration. Since OpenVPN is very complex, we provide a baseline, but your site will need probably need to customize.
+Installs OpenVPN and sets up a fairly basic configuration. Since OpenVPN is very complex, we provide a baseline only (see __Customizing Server Configuration__ below).
 
 Requirements
 ------------
@@ -14,9 +17,10 @@ Requirements
 This cookbook is tested and supported with Chef 11 & 12.
 
 ### Platform
-- Debian 6.0
+- Debian 7.x and 6.x
 - Ubuntu 10.04+
-- RHEL 5.x and RHEL 6.x w/ (EPEL is enabled as required)
+- RHEL 5.x, 6.x and 7.x w/ (EPEL is enabled as required)
+- Arch Linux
 
 ### Cookbooks
 The `yum` cookbook by Chef Software provides `recipe[yum::epel]` that is used on RHEL-family systems to enable the EPEL repository containing the openvpn RPM. See __Usage__ below.
@@ -38,11 +42,12 @@ Attributes
 ----------
 These attributes are set by the cookbook by default.
 
+* `node['openvpn']['client_cn']` - The client's Common Name used with the `openvpn::client` recipe (essentially a standalone recipe) for the client certificate and key.
 * `node['openvpn']['type']` - Valid values are 'client' (currently a work in progress), 'server' or 'server-bridge'. Default is 'server' and it will create a routed IP tunnel, and use the 'tun' device. 'server-bridge' will create an ethernet bridge and requires a tap0 device bridged with the ethernet interface, and is beyond the scope of this cookbook.
 * `node['openvpn']['subnet']` - Used for server mode to configure a VPN subnet to draw client addresses. Default is 10.8.0.0, which is what the sample OpenVPN config package uses.
 * `node['openvpn']['netmask']` - Netmask for the subnet, default is 255.255.0.0.
 * `node['openvpn']['gateway']` - FQDN for the VPN gateway server. Default is `node['fqdn']`.
-* `node['openvpn']['push_routes']` - Array of routes to to push to clients (as `push` statements) in the server.conf. Default is empty.
+* `node['openvpn']['push_routes']` - Array of routes to to push to clients (as `push` statements) in the server.conf, e.g. '192.168.0.0 255.255.255.0'. Default is empty.
 * `node['openvpn']['push_options']` - Array of options to to push to clients in the server.conf. Default is empty.
 * `node['openvpn']['configure_default_server']` - Boolean.  Set this to false if you want to create all of your "conf" files with the LWRP.
 * `node['openvpn']['key_dir']` - Location to store keys, certificates and related files. Default `/etc/openvpn/keys`.
@@ -68,25 +73,28 @@ The following are for the default values for fields place in the certificate fro
 * `node['openvpn']['key']['org']` - `KEY_ORG`
 * `node['openvpn']['key']['email']` - `KEY_EMAIL`
 
+The following lets you specify the message digest used for generating certificates by OpenVPN
+* `node['openvpn']['key']['message_digest']` - Default is `sha256` for a high-level of security.
+
 
 Recipes
 -------
-### default
+#### `openvpn::default`
 Installs the OpenVPN package only.
 
-### install
+#### `openvpn::install`
 Installs the OpenVPN package only.
 
-### server 
+#### `openvpn::server`
 Installs and configures OpenVPN as a server.
 
-### client
+#### `openvpn::client`
 Installs and configures OpenVPN as a client.
 
-### service
+#### `openvpn::service`
 Manages the OpenVPN system service (there is no need to use this recipe directly in your run_list).
 
-### users
+#### `openvpn::users`
 Utilizes a data bag called `users` to generate OpenVPN keys for each user.
 [chef-solo-search](https://github.com/edelight/chef-solo-search) is required in order to use this recipe with Chef-Solo, although it is not a dependency of this cookbook.
 
@@ -98,7 +106,7 @@ Create a role for the OpenVPN server. See above for attributes that can be enter
 ```ruby
 name "openvpn"
 description "The server that runs OpenVPN"
-run_list("recipe[openvpn]")
+run_list("recipe[openvpn::server]")
 override_attributes(
   "openvpn" => {
     "gateway" => "vpn.example.com",
@@ -117,13 +125,13 @@ override_attributes(
 
 **Note**: If you are using a Red Hat EL distribution, the EPEL repository is automatically enabled by Chef's `recipe[yum::epel]` to install the openvpn package.
 
-To push routes to clients, add `node['openvpn']['routes]` as an array attribute, e.g. if the internal network is 192.168.100.0/24:
+To push routes to clients, add `node['openvpn']['push_routes]` as an array attribute, e.g. if the internal network is 192.168.100.0/24:
 
 ```ruby
 override_attributes(
   "openvpn" => {
-    "routes => [
-      "push 'route 192.168.100.0 255.255.255.0'"
+    "push_routes => [
+      "192.168.100.0 255.255.255.0"
     ]
   }
 )

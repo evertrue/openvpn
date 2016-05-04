@@ -21,14 +21,15 @@
 default['openvpn']['configure_default_server'] = true
 
 # Used by helper library to generate certificates/keys
-default['openvpn']['key']['ca_expire'] = 3650
-default['openvpn']['key']['expire']    = 3650
-default['openvpn']['key']['size']      = 1024
-default['openvpn']['key']['country']   = 'US'
-default['openvpn']['key']['province']  = 'CA'
-default['openvpn']['key']['city']      = 'San Francisco'
-default['openvpn']['key']['org']       = 'Fort Funston'
-default['openvpn']['key']['email']     = 'admin@foobar.com'
+default['openvpn']['key']['ca_expire']      = 3650
+default['openvpn']['key']['expire']         = 3650
+default['openvpn']['key']['size']           = 1024
+default['openvpn']['key']['country']        = 'US'
+default['openvpn']['key']['province']       = 'CA'
+default['openvpn']['key']['city']           = 'San Francisco'
+default['openvpn']['key']['org']            = 'Fort Funston'
+default['openvpn']['key']['email']          = 'admin@foobar.com'
+default['openvpn']['key']['message_digest'] = 'sha256'
 
 # Cookbook attributes
 default['openvpn']['key_dir']         = '/etc/openvpn/keys'
@@ -42,15 +43,25 @@ default['openvpn']['netmask']         = '255.255.0.0'
 
 # Client specific
 default['openvpn']['gateway']         = "vpn.#{node['domain']}"
+default['openvpn']['client_cn']       = 'client'
 
 # Server specific
 # client 'push routes', attribute is treated as a helper
 default['openvpn']['push_routes'] = []
 
+# client 'push options', attribute is treated as a helper
+default['openvpn']['push_options'] = []
+
 # Direct configuration file directives (.conf) defaults
 default['openvpn']['config']['user']  = 'nobody'
+
+# the default follows Linux Standard Base Core Specification (ISO/IEC 23360 Part 1:2007(E)):
+# Table 21-2 Optional User & Group Names
 default['openvpn']['config']['group'] = value_for_platform_family(rhel: 'nobody',
-                                                                  default: 'nogroup'
+                                                                  arch: 'nobody',
+                                                                  debian: 'nogroup',
+                                                                  mac_os_x: 'nogroup',
+                                                                  default: 'nobody'
                                                                  )
 
 default['openvpn']['config']['local']           = node['ipaddress']
@@ -60,6 +71,10 @@ default['openvpn']['config']['keepalive']       = '10 120'
 default['openvpn']['config']['log']             = '/var/log/openvpn.log'
 default['openvpn']['config']['push']            = nil
 default['openvpn']['config']['script-security'] = 2
+default['openvpn']['config']['up']              = '/etc/openvpn/server.up.sh'
+default['openvpn']['config']['persist-key']     = ''
+default['openvpn']['config']['persist-tun']     = ''
+default['openvpn']['config']['comp-lzo']        = ''
 
 default['openvpn']['config']['ca']              = node['openvpn']['signing_ca_cert']
 default['openvpn']['config']['key']             = "#{node['openvpn']['key_dir']}/server.key"
