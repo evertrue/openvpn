@@ -2,6 +2,10 @@ openvpn Cookbook CHANGELOG
 ==========================
 This file is used to list changes made in each version of the openvpn cookbook.
 
+et-v3.0.0
+---------
+- Generate an empty CRL and use it by default
+- Merge in changes from upstream/master up to `538b83e`
 
 v2.1.0
 ------
