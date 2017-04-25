@@ -4,7 +4,9 @@ maintainer_email  'cookbooks@xhost.com.au'
 license           'Apache 2.0'
 description       'Installs and configures openvpn and includes rake tasks for managing certs.'
 long_description  IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version           '3.0.0'
+source_url        'https://github.com/xhost-cookbooks/openvpn'
+issues_url        'https://github.com/xhost-cookbooks/openvpn/issues'
+chef_version      '>= 12.1'
 
 recipe 'openvpn::default',              'Installs OpenVPN only (no configuration).'
 recipe 'openvpn::install',              'Installs OpenVPN only (no configuration).'
@@ -14,10 +16,10 @@ recipe 'openvpn::service',              'Manages the OpenVPN system service.'
 recipe 'openvpn::users',                'Sets up openvpn cert/configs for users data bag items.'
 recipe 'openvpn::enable_ip_forwarding', 'Enables IP forwarding on the system.'
 recipe 'openvpn::install_bridge_utils', 'Installs bridge uitilies for Linux.'
+recipe 'openvpn::easy_rsa',             'Installs easy-rsa.'
 
 depends 'apt'
 depends 'sysctl'
-depends 'yum', '~> 3.0'
 depends 'yum-epel'
 
 supports 'arch'
@@ -25,6 +27,9 @@ supports 'centos'
 supports 'debian'
 supports 'fedora'
 supports 'redhat'
+supports 'suse'
+supports 'opensuse'
+supports 'opensuseleap'
 supports 'ubuntu'
 
 attribute 'openvpn/client_cn',
@@ -150,7 +155,8 @@ attribute 'openvpn/key/size',
           display_name: 'OpenVPN Key Size',
           description:  'Default key size, set to 2048 if paranoid but will slow down '\
                         'TLS negotiation performance',
-          default:      '1024',
+          choice:       %w(4096 2048 1024),
+          default:      '2048',
           recipes:      ['openvpn::default', 'openvpn::users', 'openvpn::server']
 
 attribute 'openvpn/key/country',

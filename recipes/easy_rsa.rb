@@ -1,9 +1,8 @@
 #
 # Cookbook:: openvpn
-# Recipe:: enable_ip_forwarding
+# Recipe:: easy_rsa
 #
-# Copyright:: 2009-2013, Chef Software, Inc.
-# Copyright:: 2015, Chef Software, Inc. <legal@chef.io>
+# Copyright:: 2016, Xhost Australia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,18 +16,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_recipe 'sysctl::default'
-
-if node['platform'] == 'freebsd'
-  sysctl_param 'net.inet.ip.forwarding' do
-    value 1
-  end
-else
-  sysctl_param 'net.ipv4.conf.all.forwarding' do
-    value 1
-  end
-
-  sysctl_param 'net.ipv6.conf.all.forwarding' do
-    value 1
-  end
-end
+package 'easy-rsa'

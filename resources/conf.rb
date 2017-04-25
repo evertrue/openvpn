@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: openvpn
+# Cookbook:: openvpn
 # Resource:: conf
 #
-# Copyright 2013, Tacit Knowledge, Inc.
+# Copyright:: 2013, Tacit Knowledge, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,3 +22,7 @@ default_action :create
 attribute :cookbook, kind_of: String, default: 'openvpn'
 attribute :config,
           kind_of: Hash
+attribute :push_routes,
+          kind_of: Array
+attribute :push_options,
+          kind_of: Array

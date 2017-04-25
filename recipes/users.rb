@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: openvpn
+# Cookbook:: openvpn
 # Recipe:: users
 #
-# Copyright 2010-2013, Chef Software, Inc.
+# Copyright:: 2010-2013, Chef Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,8 +49,9 @@ else
     end
 
     %w(conf ovpn).each do |ext|
-      template "#{node['openvpn']['key_dir']}/#{u['id']}.#{ext}" do
+      template "#{node['openvpn']['key_dir']}/#{node['openvpn']['client_prefix']}-#{u['id']}.#{ext}" do
         source 'client.conf.erb'
+        cookbook node['openvpn']['cookbook_user_conf']
         variables(client_cn: u['id'])
       end
     end
@@ -58,7 +59,7 @@ else
     execute "create-openvpn-tar-#{u['id']}" do
       cwd node['openvpn']['key_dir']
       command <<-EOH
-        tar zcf #{u['id']}.tar.gz ca.crt #{u['id']}.crt #{u['id']}.key #{u['id']}.conf #{u['id']}.ovpn
+        tar zcf #{u['id']}.tar.gz ca.crt #{u['id']}.crt #{u['id']}.key #{node['openvpn']['client_prefix']}-#{u['id']}.conf #{node['openvpn']['client_prefix']}-#{u['id']}.ovpn
       EOH
       not_if { ::File.exist?("#{node['openvpn']['key_dir']}/#{u['id']}.tar.gz") }
     end
