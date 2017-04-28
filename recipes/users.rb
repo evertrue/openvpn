@@ -48,8 +48,16 @@ else
       not_if { ::File.exist?("#{node['openvpn']['key_dir']}/#{u['id']}.crt") }
     end
 
+    obj_name =
+      if node['openvpn']['client_prefix']
+        fail "client_prefix should fail: #{node['openvpn']['client_prefix'].inspect}"
+        "#{node['openvpn']['client_prefix']}-#{u['id']}"
+      else
+        u['id']
+      end
+
     %w(conf ovpn).each do |ext|
-      template "#{node['openvpn']['key_dir']}/#{node['openvpn']['client_prefix']}-#{u['id']}.#{ext}" do
+      template "#{node['openvpn']['key_dir']}/#{obj_name}.#{ext}" do
         source 'client.conf.erb'
         cookbook node['openvpn']['cookbook_user_conf']
         variables(client_cn: u['id'])
@@ -58,9 +66,10 @@ else
 
     execute "create-openvpn-tar-#{u['id']}" do
       cwd node['openvpn']['key_dir']
-      command <<-EOH
-        tar zcf #{u['id']}.tar.gz ca.crt #{u['id']}.crt #{u['id']}.key #{node['openvpn']['client_prefix']}-#{u['id']}.conf #{node['openvpn']['client_prefix']}-#{u['id']}.ovpn
-      EOH
+      command(
+        "tar zcf #{u['id']}.tar.gz ca.crt #{u['id']}.crt #{u['id']}.key " \
+        "#{obj_name}.conf #{obj_name}.ovpn"
+      )
       not_if { ::File.exist?("#{node['openvpn']['key_dir']}/#{u['id']}.tar.gz") }
     end
   end
